@@ -17,9 +17,9 @@ local player
 function love.load()
   Otokonokontroller.registerForLoveCallbacks()
   local controls = {
-    'walkLeft'  => {'key:left',  'pad:dpleft', 'axis:leftx-'},
-    'walkRight' => {'key:right', 'pad:dpleft', 'axis:leftx+'},
-    'jump'      => {'key:z',     'pad:a'},
+    walkLeft  = {'key:left',  'pad:dpleft', 'axis:leftx-'},
+    walkRight = {'key:right', 'pad:dpleft', 'axis:leftx+'},
+    jump      = {'key:z',     'pad:a'},
   }
   input = Otokonokontroller.newController(controls)
 

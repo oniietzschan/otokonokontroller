@@ -1,4 +1,4 @@
-local Ouroboros = {
+local Otokonokontroller = {
   _VERSION     = 'otokonokontroller v0.0.0',
   _URL         = 'https://github.com/oniietzschan/otokonokontroller',
   _DESCRIPTION = 'Input library for love2d',
@@ -27,9 +27,15 @@ local Ouroboros = {
   ]]
 }
 
+function Otokonokontroller.registerForLoveCallbacks()
+end
+
+function Otokonokontroller.update(dt)
+end
+
 local Controller = {}
 
-function Ouroboros.newController(...)
+function Otokonokontroller.newController(...)
   return setmetatable({}, {__index = Controller})
     :initialize(...)
 end
@@ -39,4 +45,16 @@ function Controller:initialize(controls)
   return self
 end
 
-return Ouroboros
+function Controller:get(control)
+  return 0
+end
+
+function Controller:pressed(control)
+  return false
+end
+
+function Controller:released(control)
+  return false
+end
+
+return Otokonokontroller
