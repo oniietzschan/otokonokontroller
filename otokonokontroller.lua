@@ -27,15 +27,16 @@ local Ouroboros = {
   ]]
 }
 
+local Controller = {}
+
 function Ouroboros.newController(...)
   return setmetatable({}, {__index = Controller})
     :initialize(...)
 end
 
-local Controller = {}
-
 function Controller:initialize(controls)
   self._controls = controls
+  return self
 end
 
 return Ouroboros
