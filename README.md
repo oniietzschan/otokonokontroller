@@ -14,7 +14,7 @@ local Otokonokontroller = require 'otokonokontroller'()
 local player
 
 function love.load()
-  Otokonokontroller:registerForLoveCallbacks()
+  Otokonokontroller:registerCallbacks()
 
   local globalInput = Otokonokontroller:newController({
     quit = {'key:escape'},
@@ -68,76 +68,3 @@ Todo
 * `down()`
 * `pressed()`
 * `released()`
-
-Registering for Love Callbacks (Verbose)
-----------------------------------------
-
-This is faster and maybe more flexible, but tedious. Probably just call `Otokonokontroller:registerForLoveCallbacks()` instead.
-
-Also none of these methods exist right now, so do not do this.
-
-```lua
-function love.keypressed(key)
-  Otokonokontroller:keypressed(key)
-end
-
-function love.keyreleased(key)
-  Otokonokontroller:keyreleased(key)
-end
-
-function love.mousepressed(...)
-  Otokonokontroller:mousepressed(...)
-end
-
-function love.mousereleased(...)
-  Otokonokontroller:mousereleased(...)
-end
-
-function love.mousemoved(...)
-  Otokonokontroller:mousemoved(...)
-end
-
-function love.mousefocus(...)
-  Otokonokontroller:mousefocus(...)
-end
-
-function love.wheelmoved(...)
-  Otokonokontroller:wheelmoved(...)
-end
-
-function love.joystickpressed(...)
-  Otokonokontroller:joystickpressed(...)
-end
-
-function love.joystickreleased(...)
-  Otokonokontroller:joystickreleased(...)
-end
-
-function love.joystickaxis(...)
-  Otokonokontroller:joystickaxis(...)
-end
-
-function love.joystickhat(...)
-  Otokonokontroller:joystickhat(...)
-end
-
-function love.joystickadded(...)
-  Otokonokontroller:joystickadded(...)
-end
-
-function love.joystickremoved(...)
-  Otokonokontroller:joystickremoved(...)
-end
-
-function love.gamepadpressed(joystick, button)
-  Otokonokontroller:gamepadpressed(joystick, button)
-end
-
-function love.gamepadreleased(joystick, button)
-  Otokonokontroller:gamepadreleased(joystick, button)
-end
-
-function love.gamepadaxis(...)
-  Otokonokontroller:gamepadaxis(...)
-end
-```

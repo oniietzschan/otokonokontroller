@@ -36,48 +36,32 @@ function Otokonokontroller:initialize()
   return self
 end
 
-function Otokonokontroller:registerForLoveCallbacks()
-  local noop = function() end
-  do
-    local originalFn = love.keypressed or noop
-    love.keypressed = function(key)
+function Otokonokontroller:registerCallbacks()
+  local toWrap = {
+    keypressed = function(key)
       self:pressed('key:' .. key)
-      originalFn(key)
-    end
-  end
-  do
-    local originalFn = love.keyreleased or noop
-    love.keyreleased = function(key)
+    end,
+    keyreleased = function(key)
       self:released('key:' .. key)
-      originalFn(key)
-    end
-  end
-  do
-    local originalFn = love.gamepadpressed or noop
-    love.gamepadpressed = function(joystick, button)
+    end,
+    gamepadpressed = function(joystick, button)
       self:pressed('pad:' .. button, joystick)
-      originalFn(joystick, button)
-    end
-  end
-  do
-    local originalFn = love.gamepadreleased or noop
-    love.gamepadreleased = function(joystick, button)
+    end,
+    gamepadreleased = function(joystick, button)
       self:released('pad:' .. button, joystick)
-      originalFn(joystick, button)
-    end
-  end
-  do
-    local originalFn = love.mousepressed or noop
-    love.mousepressed = function(x, y, button, isTouch)
+    end,
+    mousepressed = function(x, y, button, isTouch)
       self:pressed('mouse:' .. button)
-      originalFn(x, y, button, isTouch)
-    end
-  end
-  do
-    local originalFn = love.mousereleased or noop
-    love.mousereleased = function(x, y, button, isTouch)
+    end,
+    mousereleased = function(x, y, button, isTouch)
       self:released('mouse:' .. button)
-      originalFn(x, y, button, isTouch)
+    end,
+  }
+  for callbackName, newFn in pairs(toWrap) do
+    local originalCallbackFn = love[callbackName] or function() end
+    love[callbackName] = function(...)
+      newFn(...)
+      originalCallbackFn(...)
     end
   end
 end

@@ -28,10 +28,10 @@ describe('Otokonokontroller:', function()
     end)
   end)
 
-  describe('When calling Otokonokontroller:registerForLoveCallbacks()', function()
+  describe('When calling Otokonokontroller:registerCallbacks()', function()
     describe('When no functions exist yet', function()
       it('Should define new functions', function()
-        Otokonokontroller:registerForLoveCallbacks()
+        Otokonokontroller:registerCallbacks()
         assert.same('function', type(love.keypressed))
         assert.same('function', type(love.keyreleased))
         assert.same('function', type(love.gamepadpressed))
@@ -62,7 +62,7 @@ describe('Otokonokontroller:', function()
           mousepressed    = originalMousepressedSpy,
           mousereleased   = originalMousereleasedSpy,
         }
-        Otokonokontroller:registerForLoveCallbacks()
+        Otokonokontroller:registerCallbacks()
       end)
 
       it('Should replace and wrap all original functions', function()
@@ -99,7 +99,7 @@ describe('Otokonokontroller:', function()
     local callback
 
     before_each(function()
-      Otokonokontroller:registerForLoveCallbacks()
+      Otokonokontroller:registerCallbacks()
       controller = Otokonokontroller:newController()
       callbackSpy = spy.new(function() end)
       callback = function(...) callbackSpy(...) end

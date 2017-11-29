@@ -2,7 +2,7 @@ local Otokonokontroller = require 'otokonokontroller'()
 local player
 
 function love.load()
-  Otokonokontroller:registerForLoveCallbacks()
+  Otokonokontroller:registerCallbacks()
 
   Otokonokontroller:newController({
     quit = {'key:escape'},
