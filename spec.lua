@@ -14,10 +14,17 @@ describe('Otokonokontroller:', function()
     local controller
 
     before_each(function()
+      controller = Otokonokontroller:newController()
     end)
 
     it('Should initialize successfully', function()
-      controller = Otokonokontroller:newController()
+      -- Maybe check something here later.
+    end)
+
+    it('Public methods should error with invalid arguments', function()
+      assert.error(function() controller:setControls('(๑・∀・๑)') end)
+      assert.error(function() controller:setPressedCallback('★~(◡﹏◕✿)') end)
+      assert.error(function() controller:setReleasedCallback('(づ｡◕‿‿◕｡)づ') end)
     end)
   end)
 
@@ -80,44 +87,69 @@ describe('Otokonokontroller:', function()
     before_each(function()
       joystick = {}
       Otokonokontroller:registerForLoveCallbacks()
-      controller = Otokonokontroller:newController({
-        one = {'key:a', 'pad:a'},
-        two = {'key:b', 'key:c', 'pad:x', 'pad:y'},
-      })
+      controller = Otokonokontroller:newController()
       callbackSpy = spy.new(function() end)
       callback = function(...) callbackSpy(...) end
     end)
 
-    it('Should execute pressed callback when keyboard key is pressed', function()
-      controller:setPressedCallback(callback)
+    it('Should do nothing when input events happen without any defined callbacks', function()
+      controller:setControls({
+        one = {'key:a', 'pad:x'},
+      })
       _G.love.keypressed('a')
-      assert.spy(callbackSpy).was_called_with('one')
-      _G.love.keypressed('c')
-      assert.spy(callbackSpy).was_called_with('two')
-    end)
-
-    it('Should execute released callback when keyboard key is released', function()
-      controller:setReleasedCallback(callback)
       _G.love.keyreleased('a')
-      assert.spy(callbackSpy).was_called_with('one')
-      _G.love.keyreleased('c')
-      assert.spy(callbackSpy).was_called_with('two')
+      _G.love.gamepadpressed(joystick, 'x')
+      _G.love.gamepadreleased(joystick, 'x')
     end)
 
-    it('Should execute pressed callback when keyboard key is pressed', function()
-      controller:setPressedCallback(callback)
-      _G.love.gamepadpressed(joystick, 'a')
-      assert.spy(callbackSpy).was_called_with('one')
-      _G.love.gamepadpressed(joystick, 'y')
-      assert.spy(callbackSpy).was_called_with('two')
+    describe('When handling keyboard events', function()
+      before_each(function()
+        controller:setControls({
+          one = {'key:a'},
+          two = {'key:b', 'key:c'},
+        })
+      end)
+
+      it('Should execute pressed callback when keyboard key is pressed', function()
+        controller:setPressedCallback(callback)
+        _G.love.keypressed('a')
+        assert.spy(callbackSpy).was_called_with('one')
+        _G.love.keypressed('c')
+        assert.spy(callbackSpy).was_called_with('two')
+      end)
+
+      it('Should execute released callback when keyboard key is released', function()
+        controller:setReleasedCallback(callback)
+        _G.love.keyreleased('a')
+        assert.spy(callbackSpy).was_called_with('one')
+        _G.love.keyreleased('c')
+        assert.spy(callbackSpy).was_called_with('two')
+      end)
     end)
 
-    it('Should execute released callback when keyboard key is released', function()
-      controller:setReleasedCallback(callback)
-      _G.love.gamepadreleased(joystick, 'a')
-      assert.spy(callbackSpy).was_called_with('one')
-      _G.love.gamepadreleased(joystick, 'y')
-      assert.spy(callbackSpy).was_called_with('two')
+    describe('When handling gamepad events', function()
+      before_each(function()
+        controller:setControls({
+          one = {'pad:a'},
+          two = {'pad:x', 'pad:y'},
+        })
+      end)
+
+      it('Should execute pressed callback when keyboard key is pressed', function()
+        controller:setPressedCallback(callback)
+        _G.love.gamepadpressed(joystick, 'a')
+        assert.spy(callbackSpy).was_called_with('one')
+        _G.love.gamepadpressed(joystick, 'y')
+        assert.spy(callbackSpy).was_called_with('two')
+      end)
+
+      it('Should execute released callback when keyboard key is released', function()
+        controller:setReleasedCallback(callback)
+        _G.love.gamepadreleased(joystick, 'a')
+        assert.spy(callbackSpy).was_called_with('one')
+        _G.love.gamepadreleased(joystick, 'y')
+        assert.spy(callbackSpy).was_called_with('two')
+      end)
     end)
   end)
 end)

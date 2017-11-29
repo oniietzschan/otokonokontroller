@@ -54,8 +54,19 @@ function love.update(dt)
 end
 ```
 
+Todo
+----
+
+* mouse
+* mousewheel
+* `get()`
+* `down()`
+* `pressed()`
+* `released()`
+* specify specific joystick for controller.
+
 Registering for Love Callbacks (Verbose)
--------
+----------------------------------------
 
 This is faster and maybe more flexible, but tedious. Probably just call `Otokonokontroller:registerForLoveCallbacks()` instead.
 

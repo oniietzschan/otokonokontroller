@@ -98,6 +98,13 @@ function Otokonokontroller:_attachController(controller)
 end
 
 function Controller:initialize(controls)
+  controls = controls or {}
+  return self
+    :setControls(controls)
+end
+
+function Controller:setControls(controls)
+  assert(type(controls) == 'table', 'Controls must be a table')
   self._controls = controls
   return self
 end
@@ -142,6 +149,10 @@ function Controller:get(control)
 end
 
 function Controller:pressed(control)
+  return false
+end
+
+function Controller:down(control)
   return false
 end
 
