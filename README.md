@@ -10,18 +10,18 @@ Example
 -------
 
 ```lua
-local Otokonokontroller = require 'otokonokontroller'
+local Otokonokontroller = require 'otokonokontroller'()
 local input
 local player
 
 function love.load()
-  Otokonokontroller.registerForLoveCallbacks()
+  Otokonokontroller:registerForLoveCallbacks()
   local controls = {
     walkLeft  = {'key:left',  'pad:dpleft', 'axis:leftx-'},
     walkRight = {'key:right', 'pad:dpleft', 'axis:leftx+'},
     jump      = {'key:z',     'pad:a'},
   }
-  input = Otokonokontroller.newController(controls)
+  input = Otokonokontroller:newController(controls)
 
   player = {
     x = 0,
@@ -30,7 +30,7 @@ function love.load()
 end
 
 function love.update(dt)
-  Otokonokontroller.update(dt)
+  Otokonokontroller:update(dt)
   local relativeX = input:get('walkRight') - input:get('walkLeft')
   player.x = player.x + relativeX
   if input:pressed('jump') then
@@ -46,66 +46,66 @@ This is faster, but tedious.
 
 ```lua
 function love.keypressed(...)
-  Otokonokontroller.keypressed(...)
+  Otokonokontroller:keypressed(...)
 end
 
 function love.keyreleased(...)
-  Otokonokontroller.keyreleased(...)
+  Otokonokontroller:keyreleased(...)
 end
 
 function love.mousepressed(...)
-  Otokonokontroller.mousepressed(...)
+  Otokonokontroller:mousepressed(...)
 end
 
 function love.mousereleased(...)
-  Otokonokontroller.mousereleased(...)
+  Otokonokontroller:mousereleased(...)
 end
 
 function love.mousemoved(...)
-  Otokonokontroller.mousemoved(...)
+  Otokonokontroller:mousemoved(...)
 end
 
 function love.mousefocus(...)
-  Otokonokontroller.mousefocus(...)
+  Otokonokontroller:mousefocus(...)
 end
 
 function love.wheelmoved(...)
-  Otokonokontroller.wheelmoved(...)
+  Otokonokontroller:wheelmoved(...)
 end
 
 function love.joystickpressed(...)
-  Otokonokontroller.joystickpressed(...)
+  Otokonokontroller:joystickpressed(...)
 end
 
 function love.joystickreleased(...)
-  Otokonokontroller.joystickreleased(...)
+  Otokonokontroller:joystickreleased(...)
 end
 
 function love.joystickaxis(...)
-  Otokonokontroller.joystickaxis(...)
+  Otokonokontroller:joystickaxis(...)
 end
 
 function love.joystickhat(...)
-  Otokonokontroller.joystickhat(...)
+  Otokonokontroller:joystickhat(...)
 end
 
 function love.joystickadded(...)
-  Otokonokontroller.joystickadded(...)
+  Otokonokontroller:joystickadded(...)
 end
 
 function love.joystickremoved(...)
-  Otokonokontroller.joystickremoved(...)
+  Otokonokontroller:joystickremoved(...)
 end
 
 function love.gamepadpressed(...)
-  Otokonokontroller.gamepadpressed(...)
+  Otokonokontroller:gamepadpressed(...)
 end
 
 function love.gamepadreleased(...)
-  Otokonokontroller.gamepadreleased(...)
+  Otokonokontroller:gamepadreleased(...)
 end
 
 function love.gamepadaxis(...)
-  Otokonokontroller.gamepadaxis(...)
+  Otokonokontroller:gamepadaxis(...)
 end
 ```

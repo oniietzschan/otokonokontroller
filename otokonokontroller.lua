@@ -27,22 +27,99 @@ local Otokonokontroller = {
   ]]
 }
 
-function Otokonokontroller.registerForLoveCallbacks()
-end
-
-function Otokonokontroller.update(dt)
-end
-
 local Controller = {}
 
-function Otokonokontroller.newController(...)
-  return setmetatable({}, {__index = Controller})
+
+
+function Otokonokontroller:initialize()
+  self._controllers = {}
+  return self
+end
+
+function Otokonokontroller:registerForLoveCallbacks()
+  local noop = function() end
+  do
+    local originalFn = love.keypressed or noop
+    love.keypressed = function(key)
+      self:pressed('key:' .. key)
+      originalFn(key)
+    end
+  end
+  do
+    local originalFn = love.keyreleased or noop
+    love.keyreleased = function(key)
+      self:released('key:' .. key)
+      originalFn(key)
+    end
+  end
+end
+
+function Otokonokontroller:pressed(keycode)
+  for _, controller in ipairs(self._controllers) do
+    controller:handlePress(keycode)
+  end
+end
+
+function Otokonokontroller:released(keycode)
+  for _, controller in ipairs(self._controllers) do
+    controller:handleRelease(keycode)
+  end
+end
+
+function Otokonokontroller:update(dt)
+end
+
+function Otokonokontroller:newController(...)
+  local controller = setmetatable({}, {__index = Controller})
     :initialize(...)
+  self:_attachController(controller)
+  return controller
+end
+
+
+
+function Otokonokontroller:_attachController(controller)
+  table.insert(self._controllers, controller)
 end
 
 function Controller:initialize(controls)
   self._controls = controls
   return self
+end
+
+function Controller:setPressedCallback(fn)
+  return self:_setControlEventCallback(fn, '_onPressedFn')
+end
+
+function Controller:setReleasedCallback(fn)
+  return self:_setControlEventCallback(fn, '_onReleasedFn')
+end
+
+function Controller:_setControlEventCallback(fn, fnName)
+  assert(type(fn) == 'function', 'Pressed callback must be a function')
+  self[fnName] = fn
+  return self
+end
+
+function Controller:handlePress(keycode)
+  self:_handleControlEvent(keycode, '_onPressedFn')
+end
+
+function Controller:handleRelease(keycode)
+  self:_handleControlEvent(keycode, '_onReleasedFn')
+end
+
+function Controller:_handleControlEvent(keycode, fnName)
+  if self[fnName] == nil then
+    return
+  end
+  for control, binds in pairs(self._controls) do
+    for _, bind in ipairs(binds) do
+      if keycode == bind then
+        self[fnName](control)
+      end
+    end
+  end
 end
 
 function Controller:get(control)
@@ -57,4 +134,13 @@ function Controller:released(control)
   return false
 end
 
-return Otokonokontroller
+
+
+local OtokonokontrollerMetaTable = {
+  __index = Otokonokontroller,
+}
+
+return function()
+  return setmetatable({}, OtokonokontrollerMetaTable)
+    :initialize()
+end

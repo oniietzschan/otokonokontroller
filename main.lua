@@ -1,30 +1,45 @@
-local Otokonokontroller = require 'otokonokontroller'
+local Otokonokontroller = require 'otokonokontroller'()
 local input
 local player
 
 function love.load()
-  Otokonokontroller.registerForLoveCallbacks()
-  local controls = {
-    walkLeft  = {'key:left',  'pad:dpleft', 'axis:leftx-'},
-    walkRight = {'key:right', 'pad:dpleft', 'axis:leftx+'},
-    jump      = {'key:z',     'pad:a'},
-  }
-  input = Otokonokontroller.newController(controls)
+  Otokonokontroller:registerForLoveCallbacks()
+
+  local globalInput = Otokonokontroller:newController({
+    quit = {'key:escape'},
+  })
+    :setPressedCallback(function(control)
+      if control == 'quit' then
+        love.event.push('quit')
+      end
+    end)
 
   player = {
-    x = 0,
+    x = 400,
     y = 550,
-    jump = function() end,
   }
+  player.input = Otokonokontroller:newController({
+    walkLeft  = {'key:left',  'pad:dpleft', 'axis:leftx-'},
+    walkRight = {'key:right', 'pad:dpleft', 'axis:leftx+'},
+    climb     = {'key:up',    'pad:a'},
+    fall      = {'key:down',  'pad:b'},
+  })
+    :setPressedCallback(function(control)
+      if control == 'climb' then
+        player.y = player.y - 32
+      end
+    end)
+    :setReleasedCallback(function(control)
+      if control == 'fall' then
+        player.y = player.y + 32
+      end
+    end)
 end
 
 function love.update(dt)
-  Otokonokontroller.update(dt)
-  local relativeX = input:get('walkRight') - input:get('walkLeft')
+  Otokonokontroller:update(dt)
+  local relativeX = player.input:get('walkRight') - player.input:get('walkLeft')
   player.x = player.x + relativeX
-  if input:pressed('jump') then
-    player:jump()
-  end
 end
 
 function love.draw()
