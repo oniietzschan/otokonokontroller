@@ -42,17 +42,25 @@ describe('Otokonokontroller:', function()
     describe('When existing functions are present', function()
       local originalKeypressedSpy
       local originalKeyreleasedSpy
+      local originalGamepadpressedSpy
+      local originalGamepadreleasedSpy
+      local originalMousepressedSpy
+      local originalMousereleasedSpy
 
       before_each(function()
-        originalKeypressedSpy  = spy.new(function() end)
-        originalKeyreleasedSpy = spy.new(function() end)
+        originalKeypressedSpy      = spy.new(function() end)
+        originalKeyreleasedSpy     = spy.new(function() end)
         originalGamepadpressedSpy  = spy.new(function() end)
         originalGamepadreleasedSpy = spy.new(function() end)
+        originalMousepressedSpy    = spy.new(function() end)
+        originalMousereleasedSpy   = spy.new(function() end)
         _G.love = {
-          keypressed = originalKeypressedSpy,
-          keyreleased = originalKeyreleasedSpy,
-          gamepadpressed = originalGamepadpressedSpy,
+          keypressed      = originalKeypressedSpy,
+          keyreleased     = originalKeyreleasedSpy,
+          gamepadpressed  = originalGamepadpressedSpy,
           gamepadreleased = originalGamepadreleasedSpy,
+          mousepressed    = originalMousepressedSpy,
+          mousereleased   = originalMousereleasedSpy,
         }
         Otokonokontroller:registerForLoveCallbacks()
       end)
@@ -62,6 +70,8 @@ describe('Otokonokontroller:', function()
         assert.not_same(originalKeyreleasedSpy, love.keyreleased)
         assert.not_same(originalGamepadpressedSpy, love.gamepadpressed)
         assert.not_same(originalGamepadreleasedSpy, love.gamepadreleased)
+        assert.not_same(originalMousepressedSpy, love.mousepressed)
+        assert.not_same(originalMousereleasedSpy, love.mousereleased)
       end)
 
       it('Should call original function when calling the wrapped version', function()
@@ -74,6 +84,10 @@ describe('Otokonokontroller:', function()
         assert.spy(originalGamepadpressedSpy).was_called_with(joystick, 'dpup')
         _G.love.gamepadreleased(joystick, 'dpdown')
         assert.spy(originalGamepadreleasedSpy).was_called_with(joystick, 'dpdown')
+        _G.love.mousepressed(0, 0, 1, false)
+        assert.spy(originalMousepressedSpy).was_called_with(0, 0, 1, false)
+        _G.love.mousereleased(0, 0, 1, false)
+        assert.spy(originalMousereleasedSpy).was_called_with(0, 0, 1, false)
       end)
     end)
   end)
@@ -94,12 +108,14 @@ describe('Otokonokontroller:', function()
 
     it('Should do nothing when input events happen without any defined callbacks', function()
       controller:setControls({
-        one = {'key:a', 'pad:x'},
+        one = {'key:a', 'pad:x', 'mouse:1'},
       })
       _G.love.keypressed('a')
       _G.love.keyreleased('a')
       _G.love.gamepadpressed(joystick, 'x')
       _G.love.gamepadreleased(joystick, 'x')
+      _G.love.mousepressed(0, 0, 1, false)
+      _G.love.mousereleased(0, 0, 1, false)
     end)
 
     describe('When handling keyboard events', function()
@@ -110,7 +126,7 @@ describe('Otokonokontroller:', function()
         })
       end)
 
-      it('Should execute pressed callback when keyboard key is pressed', function()
+      it('Should execute pressed callback when key is pressed', function()
         controller:setPressedCallback(callback)
         _G.love.keypressed('a')
         assert.spy(callbackSpy).was_called_with('one')
@@ -118,7 +134,7 @@ describe('Otokonokontroller:', function()
         assert.spy(callbackSpy).was_called_with('two')
       end)
 
-      it('Should execute released callback when keyboard key is released', function()
+      it('Should execute released callback when key is released', function()
         controller:setReleasedCallback(callback)
         _G.love.keyreleased('a')
         assert.spy(callbackSpy).was_called_with('one')
@@ -135,7 +151,7 @@ describe('Otokonokontroller:', function()
         })
       end)
 
-      it('Should execute pressed callback when keyboard key is pressed', function()
+      it('Should execute pressed callback when button is pressed', function()
         controller:setPressedCallback(callback)
         _G.love.gamepadpressed(joystick, 'a')
         assert.spy(callbackSpy).was_called_with('one')
@@ -143,11 +159,36 @@ describe('Otokonokontroller:', function()
         assert.spy(callbackSpy).was_called_with('two')
       end)
 
-      it('Should execute released callback when keyboard key is released', function()
+      it('Should execute released callback when button is released', function()
         controller:setReleasedCallback(callback)
         _G.love.gamepadreleased(joystick, 'a')
         assert.spy(callbackSpy).was_called_with('one')
         _G.love.gamepadreleased(joystick, 'y')
+        assert.spy(callbackSpy).was_called_with('two')
+      end)
+    end)
+
+    describe('When handling mouse events', function()
+      before_each(function()
+        controller:setControls({
+          one = {'mouse:1'},
+          two = {'mouse:2', 'mouse:3'},
+        })
+      end)
+
+      it('Should execute pressed callback when button is pressed', function()
+        controller:setPressedCallback(callback)
+        _G.love.mousepressed(0, 0, 1, false)
+        assert.spy(callbackSpy).was_called_with('one')
+        _G.love.mousepressed(0, 0, 3, false)
+        assert.spy(callbackSpy).was_called_with('two')
+      end)
+
+      it('Should execute released callback when button is released', function()
+        controller:setReleasedCallback(callback)
+        _G.love.mousereleased(0, 0, 1, false)
+        assert.spy(callbackSpy).was_called_with('one')
+        _G.love.mousereleased(0, 0, 3, false)
         assert.spy(callbackSpy).was_called_with('two')
       end)
     end)

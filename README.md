@@ -57,18 +57,20 @@ end
 Todo
 ----
 
-* mouse
+* axis
 * mousewheel
+* specify specific joystick for controller.
 * `get()`
 * `down()`
 * `pressed()`
 * `released()`
-* specify specific joystick for controller.
 
 Registering for Love Callbacks (Verbose)
 ----------------------------------------
 
 This is faster and maybe more flexible, but tedious. Probably just call `Otokonokontroller:registerForLoveCallbacks()` instead.
+
+Also none of these methods exist right now, so do not do this.
 
 ```lua
 function love.keypressed(key)

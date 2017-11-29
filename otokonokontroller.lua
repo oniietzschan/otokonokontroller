@@ -66,6 +66,20 @@ function Otokonokontroller:registerForLoveCallbacks()
       originalFn(joystick, button)
     end
   end
+  do
+    local originalFn = love.mousepressed or noop
+    love.mousepressed = function(x, y, button, isTouch)
+      self:pressed('mouse:' .. button)
+      originalFn(x, y, button, isTouch)
+    end
+  end
+  do
+    local originalFn = love.mousereleased or noop
+    love.mousereleased = function(x, y, button, isTouch)
+      self:released('mouse:' .. button)
+      originalFn(x, y, button, isTouch)
+    end
+  end
 end
 
 function Otokonokontroller:pressed(keycode)
