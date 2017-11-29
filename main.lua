@@ -1,11 +1,10 @@
 local Otokonokontroller = require 'otokonokontroller'()
-local input
 local player
 
 function love.load()
   Otokonokontroller:registerForLoveCallbacks()
 
-  local globalInput = Otokonokontroller:newController({
+  Otokonokontroller:newController({
     quit = {'key:escape'},
   })
     :setPressedCallback(function(control)
@@ -21,8 +20,8 @@ function love.load()
   player.input = Otokonokontroller:newController({
     walkLeft  = {'key:left',  'pad:dpleft', 'axis:leftx-'},
     walkRight = {'key:right', 'pad:dpleft', 'axis:leftx+'},
-    climb     = {'key:up',    'pad:a'},
-    fall      = {'key:down',  'pad:b'},
+    climb     = {'key:up',    'pad:dpup'},
+    fall      = {'key:down',  'pad:dpdown'},
   })
     :setPressedCallback(function(control)
       if control == 'climb' then

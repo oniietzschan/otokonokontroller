@@ -11,46 +11,61 @@ Example
 
 ```lua
 local Otokonokontroller = require 'otokonokontroller'()
-local input
 local player
 
 function love.load()
   Otokonokontroller:registerForLoveCallbacks()
-  local controls = {
-    walkLeft  = {'key:left',  'pad:dpleft', 'axis:leftx-'},
-    walkRight = {'key:right', 'pad:dpleft', 'axis:leftx+'},
-    jump      = {'key:z',     'pad:a'},
-  }
-  input = Otokonokontroller:newController(controls)
+
+  local globalInput = Otokonokontroller:newController({
+    quit = {'key:escape'},
+  })
+    :setPressedCallback(function(control)
+      if control == 'quit' then
+        love.event.push('quit')
+      end
+    end)
 
   player = {
-    x = 0,
-    jump = function() end,
+    x = 400,
+    y = 550,
   }
+  player.input = Otokonokontroller:newController({
+    walkLeft  = {'key:left',  'pad:dpleft', 'axis:leftx-'},
+    walkRight = {'key:right', 'pad:dpleft', 'axis:leftx+'},
+    climb     = {'key:up',    'pad:dpup'},
+    fall      = {'key:down',  'pad:dpdown'},
+  })
+    :setPressedCallback(function(control)
+      if control == 'climb' then
+        player.y = player.y - 32
+      end
+    end)
+    :setReleasedCallback(function(control)
+      if control == 'fall' then
+        player.y = player.y + 32
+      end
+    end)
 end
 
 function love.update(dt)
   Otokonokontroller:update(dt)
-  local relativeX = input:get('walkRight') - input:get('walkLeft')
+  local relativeX = player.input:get('walkRight') - player.input:get('walkLeft')
   player.x = player.x + relativeX
-  if input:pressed('jump') then
-    player:jump()
-  end
 end
 ```
 
 Registering for Love Callbacks (Verbose)
 -------
 
-This is faster, but tedious.
+This is faster and maybe more flexible, but tedious. Probably just call `Otokonokontroller:registerForLoveCallbacks()` instead.
 
 ```lua
-function love.keypressed(...)
-  Otokonokontroller:keypressed(...)
+function love.keypressed(key)
+  Otokonokontroller:keypressed(key)
 end
 
-function love.keyreleased(...)
-  Otokonokontroller:keyreleased(...)
+function love.keyreleased(key)
+  Otokonokontroller:keyreleased(key)
 end
 
 function love.mousepressed(...)
@@ -97,12 +112,12 @@ function love.joystickremoved(...)
   Otokonokontroller:joystickremoved(...)
 end
 
-function love.gamepadpressed(...)
-  Otokonokontroller:gamepadpressed(...)
+function love.gamepadpressed(joystick, button)
+  Otokonokontroller:gamepadpressed(joystick, button)
 end
 
-function love.gamepadreleased(...)
-  Otokonokontroller:gamepadreleased(...)
+function love.gamepadreleased(joystick, button)
+  Otokonokontroller:gamepadreleased(joystick, button)
 end
 
 function love.gamepadaxis(...)

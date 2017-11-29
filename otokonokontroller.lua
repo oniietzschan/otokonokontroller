@@ -52,6 +52,20 @@ function Otokonokontroller:registerForLoveCallbacks()
       originalFn(key)
     end
   end
+  do
+    local originalFn = love.gamepadpressed or noop
+    love.gamepadpressed = function(joystick, button)
+      self:pressed('pad:' .. button)
+      originalFn(joystick, button)
+    end
+  end
+  do
+    local originalFn = love.gamepadreleased or noop
+    love.gamepadreleased = function(joystick, button)
+      self:released('pad:' .. button)
+      originalFn(joystick, button)
+    end
+  end
 end
 
 function Otokonokontroller:pressed(keycode)
@@ -67,6 +81,7 @@ function Otokonokontroller:released(keycode)
 end
 
 function Otokonokontroller:update(dt)
+  return self
 end
 
 function Otokonokontroller:newController(...)
