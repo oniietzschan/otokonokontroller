@@ -55,14 +55,14 @@ function Otokonokontroller:registerForLoveCallbacks()
   do
     local originalFn = love.gamepadpressed or noop
     love.gamepadpressed = function(joystick, button)
-      self:pressed('pad:' .. button)
+      self:pressed('pad:' .. button, joystick)
       originalFn(joystick, button)
     end
   end
   do
     local originalFn = love.gamepadreleased or noop
     love.gamepadreleased = function(joystick, button)
-      self:released('pad:' .. button)
+      self:released('pad:' .. button, joystick)
       originalFn(joystick, button)
     end
   end
@@ -82,15 +82,15 @@ function Otokonokontroller:registerForLoveCallbacks()
   end
 end
 
-function Otokonokontroller:pressed(keycode)
+function Otokonokontroller:pressed(keycode, joystick)
   for _, controller in ipairs(self._controllers) do
-    controller:handlePress(keycode)
+    controller:handlePress(keycode, joystick)
   end
 end
 
-function Otokonokontroller:released(keycode)
+function Otokonokontroller:released(keycode, joystick)
   for _, controller in ipairs(self._controllers) do
-    controller:handleRelease(keycode)
+    controller:handleRelease(keycode, joystick)
   end
 end
 
@@ -123,6 +123,12 @@ function Controller:setControls(controls)
   return self
 end
 
+function Controller:setJoystick(joystick)
+  -- TODO: maybe validate that joystick is a joystick
+  self._joystick = joystick
+  return self
+end
+
 function Controller:setPressedCallback(fn)
   return self:_setControlEventCallback(fn, '_onPressedFn')
 end
@@ -137,16 +143,18 @@ function Controller:_setControlEventCallback(fn, fnName)
   return self
 end
 
-function Controller:handlePress(keycode)
-  self:_handleControlEvent(keycode, '_onPressedFn')
+function Controller:handlePress(keycode, joystick)
+  self:_handleControlEvent(keycode, joystick, '_onPressedFn')
 end
 
-function Controller:handleRelease(keycode)
-  self:_handleControlEvent(keycode, '_onReleasedFn')
+function Controller:handleRelease(keycode, joystick)
+  self:_handleControlEvent(keycode, joystick, '_onReleasedFn')
 end
 
-function Controller:_handleControlEvent(keycode, fnName)
-  if self[fnName] == nil then
+function Controller:_handleControlEvent(keycode, joystick, fnName)
+  local isMissingCallback = self[fnName] == nil
+  local isFromAnotherJoystick = joystick and self._joystick and joystick ~= self._joystick
+  if isMissingCallback or isFromAnotherJoystick then
     return
   end
   for control, binds in pairs(self._controls) do

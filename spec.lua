@@ -93,13 +93,12 @@ describe('Otokonokontroller:', function()
   end)
 
   describe('When triggering input callbacks', function()
+    local joystick = {}
     local controller
-    local joystick
     local callbackSpy
     local callback
 
     before_each(function()
-      joystick = {}
       Otokonokontroller:registerForLoveCallbacks()
       controller = Otokonokontroller:newController()
       callbackSpy = spy.new(function() end)
@@ -165,6 +164,46 @@ describe('Otokonokontroller:', function()
         assert.spy(callbackSpy).was_called_with('one')
         _G.love.gamepadreleased(joystick, 'y')
         assert.spy(callbackSpy).was_called_with('two')
+      end)
+
+      describe('When controller has a joystick defined', function()
+        local anotherJoystick = {}
+
+        before_each(function()
+          controller:setJoystick(joystick)
+        end)
+
+        it('Should execute pressed callback when button is pressed on that joystick', function()
+          controller:setPressedCallback(callback)
+          _G.love.gamepadpressed(joystick, 'a')
+          assert.spy(callbackSpy).was_called_with('one')
+          _G.love.gamepadpressed(joystick, 'y')
+          assert.spy(callbackSpy).was_called_with('two')
+        end)
+
+        it('Should execute released callback when button is released on that joystick', function()
+          controller:setReleasedCallback(callback)
+          _G.love.gamepadreleased(joystick, 'a')
+          assert.spy(callbackSpy).was_called_with('one')
+          _G.love.gamepadreleased(joystick, 'y')
+          assert.spy(callbackSpy).was_called_with('two')
+        end)
+
+        it('Should execute pressed callback when button is pressed on some other joystick', function()
+          controller:setPressedCallback(callback)
+          _G.love.gamepadpressed(anotherJoystick, 'a')
+          assert.spy(callbackSpy).was_not_called()
+          _G.love.gamepadpressed(anotherJoystick, 'y')
+          assert.spy(callbackSpy).was_not_called()
+        end)
+
+        it('Should execute released callback when button is released on some other joystick', function()
+          controller:setReleasedCallback(callback)
+          _G.love.gamepadreleased(anotherJoystick, 'a')
+          assert.spy(callbackSpy).was_not_called()
+          _G.love.gamepadreleased(anotherJoystick, 'y')
+          assert.spy(callbackSpy).was_not_called()
+        end)
       end)
     end)
 

@@ -13,6 +13,8 @@ function love.load()
       end
     end)
 
+  local joystick = love.joystick.getJoystickCount() >= 1 and love.joystick.getJoysticks()[1] or nil
+
   player = {
     x = 400,
     y = 550,
@@ -23,6 +25,9 @@ function love.load()
     climb     = {'key:up',    'pad:dpup'},
     fall      = {'key:down',  'pad:dpdown'},
   })
+    -- Totally optional: specify a specific joystick to be used with this controller.
+    -- If this is omitted, then _all_ joysticks will be used with this controller.
+    :setJoystick(joystick)
     :setPressedCallback(function(control)
       if control == 'climb' then
         player.y = player.y - 32
