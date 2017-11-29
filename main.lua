@@ -1,6 +1,52 @@
 local Otokonokontroller = require 'otokonokontroller'()
 local player
 
+local Player = {}
+
+function Player.new()
+  return setmetatable({}, {__index = Player})
+    :initialize()
+end
+
+function Player:initialize()
+  self.x = 400
+  self.y = 300
+  self.speed = 200
+
+  local joystick = love.joystick.getJoystickCount() >= 1 and love.joystick.getJoysticks()[1] or nil
+  self.input = Otokonokontroller:newController({
+    walkLeft  = {'key:left',  'pad:dpleft', 'axis:leftx-'},
+    walkRight = {'key:right', 'pad:dpleft', 'axis:leftx+'},
+    climb     = {'key:up',    'pad:dpup'},
+    fall      = {'key:down',  'pad:dpdown'},
+  })
+    -- Totally optional: specify a specific joystick to be used with this controller.
+    -- If this is omitted, then _all_ joysticks will be used with this controller.
+    :setJoystick(joystick)
+    :setPressedCallback(function(control)
+      if control == 'climb' then
+        self.y = self.y - 32
+      end
+    end)
+    :setReleasedCallback(function(control)
+      if control == 'fall' then
+        self.y = self.y + 32
+      end
+    end)
+
+  return self
+end
+
+function Player:update(dt)
+  local relativeX = (self.input:get('walkRight') - self.input:get('walkLeft')) * self.speed * dt
+  self.x = self.x + relativeX
+  self.input:endFrame()
+end
+
+function Player:draw()
+  love.graphics.rectangle('fill', self.x, self.y, 32, 32)
+end
+
 function love.load()
   Otokonokontroller:registerCallbacks()
 
@@ -13,39 +59,13 @@ function love.load()
       end
     end)
 
-  local joystick = love.joystick.getJoystickCount() >= 1 and love.joystick.getJoysticks()[1] or nil
-
-  player = {
-    x = 400,
-    y = 550,
-  }
-  player.input = Otokonokontroller:newController({
-    walkLeft  = {'key:left',  'pad:dpleft', 'axis:leftx-'},
-    walkRight = {'key:right', 'pad:dpleft', 'axis:leftx+'},
-    climb     = {'key:up',    'pad:dpup'},
-    fall      = {'key:down',  'pad:dpdown'},
-  })
-    -- Totally optional: specify a specific joystick to be used with this controller.
-    -- If this is omitted, then _all_ joysticks will be used with this controller.
-    :setJoystick(joystick)
-    :setPressedCallback(function(control)
-      if control == 'climb' then
-        player.y = player.y - 32
-      end
-    end)
-    :setReleasedCallback(function(control)
-      if control == 'fall' then
-        player.y = player.y + 32
-      end
-    end)
+  player = Player.new()
 end
 
 function love.update(dt)
-  Otokonokontroller:update(dt)
-  local relativeX = player.input:get('walkRight') - player.input:get('walkLeft')
-  player.x = player.x + relativeX
+  player:update(dt)
 end
 
 function love.draw()
-  love.graphics.rectangle('fill', player.x, player.y, 32, 32)
+  player:draw()
 end

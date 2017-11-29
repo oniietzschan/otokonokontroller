@@ -4,7 +4,7 @@ otokonokontroller
 [![Build Status](https://travis-ci.org/oniietzschan/otokonokontroller.svg?branch=master)](https://travis-ci.org/oniietzschan/otokonokontroller)
 [![Codecov](https://codecov.io/gh/oniietzschan/otokonokontroller/branch/master/graph/badge.svg)](https://codecov.io/gh/oniietzschan/otokonokontroller)
 
-An input library for love2d.
+Otokonokontroller is an input library for Love2d. It aims to support multiple paradigms, and allows one to use both pressed and release callbacks and realtime checks like `pressed()`, `released()`, and `down()`.
 
 Example
 -------
@@ -53,9 +53,13 @@ function love.load()
 end
 
 function love.update(dt)
-  Otokonokontroller:update(dt)
-  local relativeX = player.input:get('walkRight') - player.input:get('walkLeft')
-  player.x = player.x + relativeX
+  local relX = (player.input:get('walkRight') - player.input:get('walkLeft')) * player.speed * dt
+  player.x = player.x + relX
+  player.input:endFrame()
+end
+
+function love.draw()
+  love.graphics.rectangle('fill', player.x, player.y, 32, 32)
 end
 ```
 
@@ -64,7 +68,5 @@ Todo
 
 * axis
 * mousewheel
-* `get()`
-* `down()`
-* `pressed()`
-* `released()`
+* Ignore joystick input if none has been set.
+* `setJoystick('all')`

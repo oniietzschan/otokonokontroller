@@ -78,10 +78,6 @@ function Otokonokontroller:released(keycode, joystick)
   end
 end
 
-function Otokonokontroller:update(dt)
-  return self
-end
-
 function Otokonokontroller:newController(...)
   local controller = setmetatable({}, {__index = Controller})
     :initialize(...)
@@ -104,11 +100,19 @@ end
 function Controller:setControls(controls)
   assert(type(controls) == 'table', 'Controls must be a table')
   self._controls = controls
+  self._pressed = {}
+  self._released = {}
+  self:_resetPressedAndReleased()
+  self._values = {}
+  for control, _ in pairs(self._controls) do
+    self._values[control] = 0
+  end
   return self
 end
 
 function Controller:setJoystick(joystick)
-  -- TODO: maybe validate that joystick is a joystick
+  local isJoystick = type(joystick.typeOf) == 'function' and joystick:typeOf('Joystick')
+  assert(isJoystick, 'Joystick must be a love2d Joystick, got object of type: ' .. type(joystick))
   self._joystick = joystick
   return self
 end
@@ -127,43 +131,67 @@ function Controller:_setControlEventCallback(fn, fnName)
   return self
 end
 
+function Controller:endFrame()
+  self:_resetPressedAndReleased()
+end
+
+function Controller:_resetPressedAndReleased()
+  for control, _ in pairs(self._controls) do
+    self._pressed[control] = false
+    self._released[control] = false
+  end
+end
+
 function Controller:handlePress(keycode, joystick)
-  self:_handleControlEvent(keycode, joystick, '_onPressedFn')
+  self:_handleControlEvent(keycode, 1, joystick, '_onPressedFn')
 end
 
 function Controller:handleRelease(keycode, joystick)
-  self:_handleControlEvent(keycode, joystick, '_onReleasedFn')
+  self:_handleControlEvent(keycode, 0, joystick, '_onReleasedFn')
 end
 
-function Controller:_handleControlEvent(keycode, joystick, fnName)
-  local isMissingCallback = self[fnName] == nil
-  local isFromAnotherJoystick = joystick and self._joystick and joystick ~= self._joystick
-  if isMissingCallback or isFromAnotherJoystick then
+function Controller:_handleControlEvent(keycode, value, joystick, fnName)
+  assert(value >= 0 and value <= 1, 'value must be within 0 - 1, was: ' .. value)
+  if joystick and self._joystick and joystick ~= self._joystick then
     return
   end
   for control, binds in pairs(self._controls) do
-    for _, bind in ipairs(binds) do
-      if keycode == bind then
+    for _, bind in ipairs(binds) do repeat
+      if keycode ~= bind then
+        break
+      end
+      if self[fnName] then
         self[fnName](control)
       end
-    end
+      self._values[control] = value
+      local key = (value > 0) and '_pressed' or '_released'
+      self[key][control] = true
+    until true end
   end
 end
 
 function Controller:get(control)
-  return 0
+  self:_assertControlDefined(control)
+  return self._values[control]
 end
 
 function Controller:pressed(control)
-  return false
+  self:_assertControlDefined(control)
+  return self._pressed[control] == true
 end
 
 function Controller:down(control)
-  return false
+  self:_assertControlDefined(control)
+  return self._values[control] > 0
 end
 
 function Controller:released(control)
-  return false
+  self:_assertControlDefined(control)
+  return self._released[control] == true
+end
+
+function Controller:_assertControlDefined(control)
+  assert(self._controls[control], 'Undefined control: ' .. control)
 end
 
 

@@ -4,10 +4,14 @@ OtokonokontrollerFactory = require 'otokonokontroller'
 
 describe('Otokonokontroller:', function()
   local Otokonokontroller
+  local joystick
+  local anotherJoystick
 
   before_each(function()
     Otokonokontroller = OtokonokontrollerFactory()
     _G.love = {}
+    joystick        = {typeOf = function(self, t) return t == 'Joystick' end}
+    anotherJoystick = {typeOf = function(self, t) return t == 'Joystick' end}
   end)
 
   describe('When creating a new controller', function()
@@ -23,6 +27,7 @@ describe('Otokonokontroller:', function()
 
     it('Public methods should error with invalid arguments', function()
       assert.error(function() controller:setControls('(๑・∀・๑)') end)
+      assert.error(function() controller:setJoystick({typeOf = '(◡‿◡✿)'}) end)
       assert.error(function() controller:setPressedCallback('★~(◡﹏◕✿)') end)
       assert.error(function() controller:setReleasedCallback('(づ｡◕‿‿◕｡)づ') end)
     end)
@@ -93,7 +98,6 @@ describe('Otokonokontroller:', function()
   end)
 
   describe('When triggering input callbacks', function()
-    local joystick = {}
     local controller
     local callbackSpy
     local callback
@@ -140,6 +144,42 @@ describe('Otokonokontroller:', function()
         _G.love.keyreleased('c')
         assert.spy(callbackSpy).was_called_with('two')
       end)
+
+      it('get(), pressed(), down(), and released() should return expected values', function()
+        assert.same(0,     controller:get('one'))
+        assert.same(false, controller:pressed('one'))
+        assert.same(false, controller:down('one'))
+        assert.same(false, controller:released('one'))
+        controller:endFrame()
+
+        _G.love.keypressed('a')
+        assert.same(1,     controller:get('one'))
+        assert.same(true,  controller:pressed('one'))
+        assert.same(true,  controller:down('one'))
+        assert.same(false, controller:released('one'))
+        controller:endFrame()
+
+        assert.same(1,     controller:get('one'))
+        assert.same(false, controller:pressed('one'))
+        assert.same(true,  controller:down('one'))
+        assert.same(false, controller:released('one'))
+        controller:endFrame()
+
+        _G.love.keyreleased('a')
+        assert.same(0,     controller:get('one'))
+        assert.same(false, controller:pressed('one'))
+        assert.same(false, controller:down('one'))
+        assert.same(true,  controller:released('one'))
+        controller:endFrame()
+
+        _G.love.keypressed('a')
+        _G.love.keyreleased('a')
+        assert.same(0,     controller:get('one'))
+        assert.same(true,  controller:pressed('one'))
+        assert.same(false, controller:down('one'))
+        assert.same(true,  controller:released('one'))
+        controller:endFrame()
+      end)
     end)
 
     describe('When handling gamepad events', function()
@@ -166,9 +206,43 @@ describe('Otokonokontroller:', function()
         assert.spy(callbackSpy).was_called_with('two')
       end)
 
-      describe('When controller has a joystick defined', function()
-        local anotherJoystick = {}
+      it('get(), pressed(), down(), and released() should return expected values', function()
+        assert.same(0,     controller:get('one'))
+        assert.same(false, controller:pressed('one'))
+        assert.same(false, controller:down('one'))
+        assert.same(false, controller:released('one'))
+        controller:endFrame()
 
+        _G.love.gamepadpressed(joystick, 'a')
+        assert.same(1,     controller:get('one'))
+        assert.same(true,  controller:pressed('one'))
+        assert.same(true,  controller:down('one'))
+        assert.same(false, controller:released('one'))
+        controller:endFrame()
+
+        assert.same(1,     controller:get('one'))
+        assert.same(false, controller:pressed('one'))
+        assert.same(true,  controller:down('one'))
+        assert.same(false, controller:released('one'))
+        controller:endFrame()
+
+        _G.love.gamepadreleased(joystick, 'a')
+        assert.same(0,     controller:get('one'))
+        assert.same(false, controller:pressed('one'))
+        assert.same(false, controller:down('one'))
+        assert.same(true,  controller:released('one'))
+        controller:endFrame()
+
+        _G.love.gamepadpressed(joystick, 'a')
+        _G.love.gamepadreleased(joystick, 'a')
+        assert.same(0,     controller:get('one'))
+        assert.same(true,  controller:pressed('one'))
+        assert.same(false, controller:down('one'))
+        assert.same(true,  controller:released('one'))
+        controller:endFrame()
+      end)
+
+      describe('When controller has a joystick defined', function()
         before_each(function()
           controller:setJoystick(joystick)
         end)
@@ -229,6 +303,42 @@ describe('Otokonokontroller:', function()
         assert.spy(callbackSpy).was_called_with('one')
         _G.love.mousereleased(0, 0, 3, false)
         assert.spy(callbackSpy).was_called_with('two')
+      end)
+
+      it('get(), pressed(), down(), and released() should return expected values', function()
+        assert.same(0,     controller:get('one'))
+        assert.same(false, controller:pressed('one'))
+        assert.same(false, controller:down('one'))
+        assert.same(false, controller:released('one'))
+        controller:endFrame()
+
+        _G.love.mousepressed(0, 0, 1, false)
+        assert.same(1,     controller:get('one'))
+        assert.same(true,  controller:pressed('one'))
+        assert.same(true,  controller:down('one'))
+        assert.same(false, controller:released('one'))
+        controller:endFrame()
+
+        assert.same(1,     controller:get('one'))
+        assert.same(false, controller:pressed('one'))
+        assert.same(true,  controller:down('one'))
+        assert.same(false, controller:released('one'))
+        controller:endFrame()
+
+        _G.love.mousereleased(0, 0, 1, false)
+        assert.same(0,     controller:get('one'))
+        assert.same(false, controller:pressed('one'))
+        assert.same(false, controller:down('one'))
+        assert.same(true,  controller:released('one'))
+        controller:endFrame()
+
+        _G.love.mousepressed(0, 0, 1, false)
+        _G.love.mousereleased(0, 0, 1, false)
+        assert.same(0,     controller:get('one'))
+        assert.same(true,  controller:pressed('one'))
+        assert.same(false, controller:down('one'))
+        assert.same(true,  controller:released('one'))
+        controller:endFrame()
       end)
     end)
   end)
