@@ -15,10 +15,10 @@ function Player:initialize()
 
   local joystick = love.joystick.getJoystickCount() >= 1 and love.joystick.getJoysticks()[1] or nil
   self.input = Otokonokontroller:newController({
-    walkLeft  = {'key:left',  'pad:dpleft', 'axis:leftx-'},
-    walkRight = {'key:right', 'pad:dpleft', 'axis:leftx+'},
-    climb     = {'key:up',    'pad:dpup'},
-    fall      = {'key:down',  'pad:dpdown'},
+    walkLeft  = {'key:a', 'key:left',  'pad:dpleft', 'axis:leftx-'},
+    walkRight = {'key:d', 'key:right', 'pad:dpright', 'axis:leftx+'},
+    climb     = {'key:w', 'key:up',    'pad:dpup'},
+    fall      = {'key:s', 'key:down',  'pad:dpdown'},
   })
     -- Totally optional: specify a specific joystick to be used with this controller.
     -- If this is omitted, then _all_ joysticks will be used with this controller.
@@ -38,8 +38,8 @@ function Player:initialize()
 end
 
 function Player:update(dt)
-  local relativeX = (self.input:get('walkRight') - self.input:get('walkLeft')) * self.speed * dt
-  self.x = self.x + relativeX
+  local x = self.input:get('walkRight') - self.input:get('walkLeft')
+  self.x = self.x + (x * self.speed * dt)
   self.input:endFrame()
 end
 

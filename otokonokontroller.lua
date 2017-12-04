@@ -38,22 +38,28 @@ end
 
 local loveCallbacksToWrap = {
   keypressed = function(self, key)
-    Otokonokontroller.pressed(self, 'key:' .. key)
+    Otokonokontroller.changed(self, 'key:' .. key, 1)
   end,
   keyreleased = function(self, key)
-    Otokonokontroller.released(self, 'key:' .. key)
-  end,
-  gamepadpressed = function(self, joystick, button)
-    Otokonokontroller.pressed(self, 'pad:' .. button, joystick)
-  end,
-  gamepadreleased = function(self, joystick, button)
-    Otokonokontroller.released(self, 'pad:' .. button, joystick)
+    Otokonokontroller.changed(self, 'key:' .. key, 0)
   end,
   mousepressed = function(self, x, y, button, isTouch)
-    Otokonokontroller.pressed(self, 'mouse:' .. button)
+    Otokonokontroller.changed(self, 'mouse:' .. button, 1)
   end,
   mousereleased = function(self, x, y, button, isTouch)
-    Otokonokontroller.released(self, 'mouse:' .. button)
+    Otokonokontroller.changed(self, 'mouse:' .. button, 0)
+  end,
+  gamepadpressed = function(self, joystick, button)
+    Otokonokontroller.changed(self, 'pad:' .. button, 1, joystick)
+  end,
+  gamepadreleased = function(self, joystick, button)
+    Otokonokontroller.changed(self, 'pad:' .. button, 0, joystick)
+  end,
+  gamepadaxis = function(self, joystick, axis, value)
+    local positiveValue = math.max(0, value)
+    local negativeValue = math.abs(math.min(0, value))
+    Otokonokontroller.changed(self, 'axis:' .. axis .. '+', positiveValue, joystick)
+    Otokonokontroller.changed(self, 'axis:' .. axis .. '-', negativeValue, joystick)
   end,
 }
 function Otokonokontroller:registerCallbacks()
@@ -66,15 +72,9 @@ function Otokonokontroller:registerCallbacks()
   end
 end
 
-function Otokonokontroller:pressed(keycode, joystick)
+function Otokonokontroller:changed(keycode, value, joystick)
   for _, controller in ipairs(self._controllers) do
-    controller:handlePress(keycode, joystick)
-  end
-end
-
-function Otokonokontroller:released(keycode, joystick)
-  for _, controller in ipairs(self._controllers) do
-    controller:handleRelease(keycode, joystick)
+    controller:handleChange(keycode, value, joystick)
   end
 end
 
@@ -85,28 +85,38 @@ function Otokonokontroller:newController(...)
   return controller
 end
 
-
-
 function Otokonokontroller:_attachController(controller)
   table.insert(self._controllers, controller)
 end
+
+
 
 function Controller:initialize(controls)
   controls = controls or {}
   return self
     :setControls(controls)
+    :setDeadzone(0.1)
+    :setPressedCallback(nil)
+    :setReleasedCallback(nil)
 end
 
 function Controller:setControls(controls)
   assert(type(controls) == 'table', 'Controls must be a table')
   self._controls = controls
   self._pressed = {}
+  self._pressedBy = {}
   self._released = {}
   self:_resetPressedAndReleased()
   self._values = {}
   for control, _ in pairs(self._controls) do
     self._values[control] = 0
   end
+  return self
+end
+
+function Controller:setDeadzone(deadzone)
+  assert(deadzone >= 0 and deadzone <= 1, 'deadzone must be within 0 - 1, was: ' .. deadzone)
+  self._deadzone = deadzone
   return self
 end
 
@@ -125,9 +135,11 @@ function Controller:setReleasedCallback(fn)
   return self:_setControlEventCallback(fn, '_onReleasedFn')
 end
 
+local _noop = function() end
+
 function Controller:_setControlEventCallback(fn, fnName)
-  assert(type(fn) == 'function', 'Pressed callback must be a function')
-  self[fnName] = fn
+  assert(type(fn) == 'function' or fn == nil, 'Pressed callback must be a function or nil')
+  self[fnName] = fn or _noop
   return self
 end
 
@@ -142,30 +154,44 @@ function Controller:_resetPressedAndReleased()
   end
 end
 
-function Controller:handlePress(keycode, joystick)
-  self:_handleControlEvent(keycode, 1, joystick, '_onPressedFn')
-end
+local PRESSED = 'pressed'
+local RELEASED = 'released'
 
-function Controller:handleRelease(keycode, joystick)
-  self:_handleControlEvent(keycode, 0, joystick, '_onReleasedFn')
-end
-
-function Controller:_handleControlEvent(keycode, value, joystick, fnName)
+function Controller:handleChange(keycode, value, joystick)
   assert(value >= 0 and value <= 1, 'value must be within 0 - 1, was: ' .. value)
   if joystick and self._joystick and joystick ~= self._joystick then
     return
   end
   for control, binds in pairs(self._controls) do
     for _, bind in ipairs(binds) do repeat
+      -- Continue if keycode is not bound to this control
       if keycode ~= bind then
         break
       end
-      if self[fnName] then
-        self[fnName](control)
+      if value < self._deadzone then
+        -- Continue if value is under deadzone AND this input is from another binding besides the last active one.
+        -- This check exists to filter out noise from idle joysticks which are jittering with values near zero.
+        if keycode ~= self._pressedBy[control] then
+          break
+        end
+        value = 0
+      else
+        self._pressedBy[control] = keycode
+      end
+      local event
+      if     value >= self._deadzone and self._values[control] < self._deadzone then
+        event = PRESSED
+      elseif value < self._deadzone and self._values[control] >= self._deadzone then
+        event = RELEASED
       end
       self._values[control] = value
-      local key = (value > 0) and '_pressed' or '_released'
-      self[key][control] = true
+      if     event == PRESSED then
+        self._pressed[control] = true
+        self._onPressedFn(control)
+      elseif event == RELEASED then
+        self._released[control] = true
+        self._onReleasedFn(control)
+      end
     until true end
   end
 end
@@ -182,7 +208,7 @@ end
 
 function Controller:down(control)
   self:_assertControlDefined(control)
-  return self._values[control] > 0
+  return self._values[control] >= self._deadzone
 end
 
 function Controller:released(control)

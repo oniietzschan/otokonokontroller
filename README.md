@@ -4,7 +4,7 @@ otokonokontroller
 [![Build Status](https://travis-ci.org/oniietzschan/otokonokontroller.svg?branch=master)](https://travis-ci.org/oniietzschan/otokonokontroller)
 [![Codecov](https://codecov.io/gh/oniietzschan/otokonokontroller/branch/master/graph/badge.svg)](https://codecov.io/gh/oniietzschan/otokonokontroller)
 
-Otokonokontroller is an input library for Love2d. It aims to support multiple paradigms, and allows one to use both pressed and release callbacks and realtime checks like `pressed()`, `released()`, and `down()`.
+Otokonokontroller is an input library for Love2d. It aims to support multiple paradigms, allowing one to use both input event callbacks and realtime checks like `pressed()`, `released()`, and `down()`.
 
 Example
 -------
@@ -32,10 +32,10 @@ function love.load()
     y = 550,
   }
   player.input = Otokonokontroller:newController({
-    walkLeft  = {'key:left',  'pad:dpleft', 'axis:leftx-'},
-    walkRight = {'key:right', 'pad:dpleft', 'axis:leftx+'},
-    climb     = {'key:up',    'pad:dpup'},
-    fall      = {'key:down',  'pad:dpdown'},
+    walkLeft  = {'key:a', 'key:left',  'pad:dpleft', 'axis:leftx-'},
+    walkRight = {'key:d', 'key:right', 'pad:dpright', 'axis:leftx+'},
+    climb     = {'key:w', 'key:up',    'pad:dpup'},
+    fall      = {'key:s', 'key:down',  'pad:dpdown'},
   })
     -- Totally optional: specify a specific joystick to be used with this controller.
     -- If this is omitted, then _all_ joysticks will be used with this controller.
@@ -53,8 +53,8 @@ function love.load()
 end
 
 function love.update(dt)
-  local relX = (player.input:get('walkRight') - player.input:get('walkLeft')) * player.speed * dt
-  player.x = player.x + relX
+  local x = self.input:get('walkRight') - self.input:get('walkLeft')
+  player.x = player.x + (x * self.speed * dt)
   player.input:endFrame()
 end
 
@@ -66,7 +66,6 @@ end
 Todo
 ----
 
-* axis
 * mousewheel
 * Ignore joystick input if none has been set.
 * `setJoystick('all')`

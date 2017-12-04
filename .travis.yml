@@ -15,9 +15,12 @@ before_install:
 
 install:
   - luarocks install busted
+  - luarocks install luacheck
   - luarocks install luacov
 
 script:
+  - luacheck --no-unused-args --no-max-line-length --std max+love   otokonokontroller.lua main.lua
+  - luacheck --no-unused-args --no-max-line-length --std max+busted spec.lua
   - busted --verbose --coverage spec.lua
 
 after_success:
