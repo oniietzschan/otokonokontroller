@@ -136,6 +136,17 @@ describe('Otokonokontroller:', function()
       _G.love.mousereleased(0, 0, 1, false)
     end)
 
+    it('Should do nothing when input events occur but controller is disabled', function()
+      controller
+        :setControls({
+          one = {'key:a'},
+        })
+        :disable()
+        :setPressedCallback(callback)
+      _G.love.keypressed('a')
+      assert.spy(callbackSpy).was_not_called()
+    end)
+
     describe('When handling keyboard events', function()
       before_each(function()
         controller:setControls({

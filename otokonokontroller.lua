@@ -112,10 +112,21 @@ end
 function Controller:initialize(controls)
   controls = controls or {}
   return self
+    :enable()
     :setControls(controls)
     :setDeadzone(0.1)
     :setPressedCallback(nil)
     :setReleasedCallback(nil)
+end
+
+function Controller:enable()
+  self._enabled = true
+  return self
+end
+
+function Controller:disable()
+  self._enabled = false
+  return self
 end
 
 function Controller:setControls(controls)
@@ -176,7 +187,7 @@ end
 
 function Controller:handleChange(keycode, value, joystick)
   assert(value >= 0 and value <= 1, 'value must be within 0 - 1, was: ' .. value)
-  if joystick and joystick ~= self._joystick and self._joystick ~= ALL then
+  if self._enabled ~= true or (joystick and joystick ~= self._joystick and self._joystick ~= ALL) then
     return
   end
   for control, binds in pairs(self._controls) do
