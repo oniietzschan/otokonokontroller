@@ -13,16 +13,16 @@ function Player:initialize()
   self.y = 300
   self.speed = 200
 
-  local joystick = love.joystick.getJoystickCount() >= 1 and love.joystick.getJoysticks()[1] or nil
   self.input = Otokonokontroller:newController({
     walkLeft  = {'key:a', 'key:left',  'pad:dpleft', 'axis:leftx-'},
     walkRight = {'key:d', 'key:right', 'pad:dpright', 'axis:leftx+'},
     climb     = {'key:w', 'key:up',    'pad:dpup'},
     fall      = {'key:s', 'key:down',  'pad:dpdown'},
   })
-    -- Totally optional: specify a specific joystick to be used with this controller.
-    -- If this is omitted, then _all_ joysticks will be used with this controller.
-    :setJoystick(joystick)
+    -- Specify a specific joystick to be used with this controller.
+    -- You can specify the string "all" in order to use every available joystick with this controller.
+    -- If this is omitted or set to nil, then no joysticks will be used with this controller.
+    :setJoystick('all')
     :setPressedCallback(function(control)
       if control == 'climb' then
         self.y = self.y - 32

@@ -366,10 +366,12 @@ describe('Otokonokontroller:', function()
 
     describe('When handling gamepad button events', function()
       before_each(function()
-        controller:setControls({
-          one = {'pad:a'},
-          two = {'pad:x', 'pad:y'},
-        })
+        controller
+          :setControls({
+            one = {'pad:a'},
+            two = {'pad:x', 'pad:y'},
+          })
+          :setJoystick(joystick)
       end)
 
       it('Should execute pressed callback when button is pressed', function()
@@ -426,27 +428,33 @@ describe('Otokonokontroller:', function()
         controller:endFrame()
       end)
 
-      describe('When controller has a joystick defined', function()
+      describe('When controller has no joystick defined', function()
         before_each(function()
-          controller:setJoystick(joystick)
+          controller:setJoystick(nil)
         end)
 
-        it('Should execute pressed callback when button is pressed on that joystick', function()
+        it('Should do nothing when button is pressed on a joystick', function()
           controller:setPressedCallback(callback)
           _G.love.gamepadpressed(joystick, 'a')
-          assert.spy(callbackSpy).was_called_with('one')
+          assert.spy(callbackSpy).was_not_called()
           _G.love.gamepadpressed(joystick, 'y')
-          assert.spy(callbackSpy).was_called_with('two')
+          assert.spy(callbackSpy).was_not_called()
         end)
 
-        it('Should execute released callback when button is released on that joystick', function()
+        it('Should do nothing when button is released on a joystick', function()
           controller:setReleasedCallback(callback)
           _G.love.gamepadpressed(joystick, 'a')
           _G.love.gamepadreleased(joystick, 'a')
-          assert.spy(callbackSpy).was_called_with('one')
+          assert.spy(callbackSpy).was_not_called()
           _G.love.gamepadpressed(joystick, 'y')
           _G.love.gamepadreleased(joystick, 'y')
-          assert.spy(callbackSpy).was_called_with('two')
+          assert.spy(callbackSpy).was_not_called()
+        end)
+      end)
+
+      describe('When controller has a joystick defined', function()
+        before_each(function()
+          controller:setJoystick(joystick)
         end)
 
         it('Should do nothing when button is pressed on some other joystick', function()
@@ -467,6 +475,30 @@ describe('Otokonokontroller:', function()
           assert.spy(callbackSpy).was_not_called()
         end)
       end)
+
+      describe('When controller has joystick set to "all"', function()
+        before_each(function()
+          controller:setJoystick('all')
+        end)
+
+        it('Should call pressed callback when button is pressed on any joystick', function()
+          controller:setPressedCallback(callback)
+          _G.love.gamepadpressed(joystick, 'a')
+          assert.spy(callbackSpy).was_called(1)
+          _G.love.gamepadpressed(anotherJoystick, 'y')
+          assert.spy(callbackSpy).was_called(2)
+        end)
+
+        it('Should call released callback when button is released on any joystick', function()
+          controller:setReleasedCallback(callback)
+          _G.love.gamepadpressed(joystick, 'a')
+          _G.love.gamepadreleased(joystick, 'a')
+          assert.spy(callbackSpy).was_called(1)
+          _G.love.gamepadpressed(anotherJoystick, 'y')
+          _G.love.gamepadreleased(anotherJoystick, 'y')
+          assert.spy(callbackSpy).was_called(2)
+        end)
+      end)
     end)
 
     describe('When handling gamepad axis events', function()
@@ -482,10 +514,12 @@ describe('Otokonokontroller:', function()
       local rightFullOn         = fullOn
 
       before_each(function()
-        controller:setControls({
-          left = {'axis:leftx-'},
-          right = {'axis:leftx+'},
-        })
+        controller
+          :setControls({
+            left = {'axis:leftx-'},
+            right = {'axis:leftx+'},
+          })
+          :setJoystick(joystick)
       end)
 
       it('Should execute pressed callback when axis is moved past deadzone', function()
@@ -622,22 +656,28 @@ describe('Otokonokontroller:', function()
         controller:endFrame()
       end)
 
-      describe('When controller has a joystick defined', function()
+      describe('When controller has no joystick defined', function()
         before_each(function()
-          controller:setJoystick(joystick)
+          controller:setJoystick(nil)
         end)
 
-        it('Should execute pressed callback when axis is pushed past deadzone on that joystick', function()
+        it('Should do nothing when axis is pushed past deadzone on a joystick', function()
           controller:setPressedCallback(callback)
           _G.love.gamepadaxis(joystick, 'leftx', leftAfterDeadzone)
-          assert.spy(callbackSpy).was_called_with('left')
+          assert.spy(callbackSpy).was_not_called()
         end)
 
-        it('Should execute released callback when axis is released on that joystick', function()
+        it('Should do nothing when axis is released on a joystick', function()
           controller:setReleasedCallback(callback)
           _G.love.gamepadaxis(joystick, 'leftx', leftAfterDeadzone)
           _G.love.gamepadaxis(joystick, 'leftx', neutral)
-          assert.spy(callbackSpy).was_called_with('left')
+          assert.spy(callbackSpy).was_not_called()
+        end)
+      end)
+
+      describe('When controller has a joystick defined', function()
+        before_each(function()
+          controller:setJoystick(joystick)
         end)
 
         it('Should do nothing when axis is pushed past deadzone on some other joystick', function()
@@ -651,6 +691,31 @@ describe('Otokonokontroller:', function()
           _G.love.gamepadaxis(anotherJoystick, 'leftx', leftAfterDeadzone)
           _G.love.gamepadaxis(anotherJoystick, 'leftx', neutral)
           assert.spy(callbackSpy).was_not_called()
+        end)
+      end)
+
+      describe('When controller has joystick set to "all"', function()
+        before_each(function()
+          controller:setJoystick('all')
+        end)
+
+        it('Should call pressed callback when axis is pushed past deadzone on any joystick', function()
+          controller:setPressedCallback(callback)
+          _G.love.gamepadaxis(joystick, 'leftx', leftAfterDeadzone)
+          assert.spy(callbackSpy).was_called(1)
+          _G.love.gamepadaxis(joystick, 'leftx', neutral)
+          _G.love.gamepadaxis(anotherJoystick, 'leftx', leftAfterDeadzone)
+          assert.spy(callbackSpy).was_called(2)
+        end)
+
+        it('Should call released callback when axis is released on any joystick', function()
+          controller:setReleasedCallback(callback)
+          _G.love.gamepadaxis(joystick, 'leftx', leftAfterDeadzone)
+          _G.love.gamepadaxis(joystick, 'leftx', neutral)
+          assert.spy(callbackSpy).was_called(1)
+          _G.love.gamepadaxis(anotherJoystick, 'leftx', leftAfterDeadzone)
+          _G.love.gamepadaxis(anotherJoystick, 'leftx', neutral)
+          assert.spy(callbackSpy).was_called(2)
         end)
       end)
     end)

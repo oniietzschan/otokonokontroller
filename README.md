@@ -37,8 +37,9 @@ function love.load()
     climb     = {'key:w', 'key:up',    'pad:dpup'},
     fall      = {'key:s', 'key:down',  'pad:dpdown'},
   })
-    -- Totally optional: specify a specific joystick to be used with this controller.
-    -- If this is omitted, then _all_ joysticks will be used with this controller.
+    -- Specify a specific joystick to be used with this controller.
+    -- You can specify the string "all" in order to use every available joystick with this controller.
+    -- If this is omitted or set to nil, then no joysticks will be used with this controller.
     :setJoystick(joystick)
     :setPressedCallback(function(control)
       if control == 'climb' then
@@ -73,5 +74,5 @@ The mouse wheel is unique in that it does not have any conception of being press
 Todo
 ----
 
-* Ignore joystick input if none has been set.
-* `setJoystick('all')`
+* Disable controller.
+* Detach controller.

@@ -29,6 +29,10 @@ local Otokonokontroller = {
 
 local Controller = {}
 
+local ALL = 'all'
+local PRESSED = 'pressed'
+local RELEASED = 'released'
+
 
 
 function Otokonokontroller:initialize()
@@ -135,8 +139,10 @@ function Controller:setDeadzone(deadzone)
 end
 
 function Controller:setJoystick(joystick)
-  local isNilOrJoystick = joystick == nil or (type(joystick.typeOf) == 'function' and joystick:typeOf('Joystick'))
-  assert(isNilOrJoystick, 'Joystick must be nil or a love2d Joystick, got object of type: ' .. type(joystick))
+  local isJoystick = type(joystick) == 'table' and type(joystick.typeOf) == 'function' and joystick:typeOf('Joystick')
+  local isAll = joystick == ALL
+  local isNil = joystick == nil
+  assert(isJoystick or isAll or isNil, 'Joystick must be a joystick, "all", or nil. Got type: ' .. type(joystick))
   self._joystick = joystick
   return self
 end
@@ -168,12 +174,9 @@ function Controller:_resetPressedAndReleased()
   end
 end
 
-local PRESSED = 'pressed'
-local RELEASED = 'released'
-
 function Controller:handleChange(keycode, value, joystick)
   assert(value >= 0 and value <= 1, 'value must be within 0 - 1, was: ' .. value)
-  if joystick and self._joystick and joystick ~= self._joystick then
+  if joystick and joystick ~= self._joystick and self._joystick ~= ALL then
     return
   end
   for control, binds in pairs(self._controls) do
