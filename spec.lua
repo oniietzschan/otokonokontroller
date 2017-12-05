@@ -39,33 +39,43 @@ describe('Otokonokontroller:', function()
         Otokonokontroller:registerCallbacks()
         assert.same('function', type(_G.love.keypressed))
         assert.same('function', type(_G.love.keyreleased))
+        assert.same('function', type(_G.love.mousepressed))
+        assert.same('function', type(_G.love.mousereleased))
+        assert.same('function', type(_G.love.wheelmoved))
         assert.same('function', type(_G.love.gamepadpressed))
         assert.same('function', type(_G.love.gamepadreleased))
+        assert.same('function', type(_G.love.gamepadaxis))
       end)
     end)
 
     describe('When existing functions are present', function()
       local originalKeypressedSpy
       local originalKeyreleasedSpy
-      local originalGamepadpressedSpy
-      local originalGamepadreleasedSpy
       local originalMousepressedSpy
       local originalMousereleasedSpy
+      local originalWheelmovedSpy
+      local originalGamepadpressedSpy
+      local originalGamepadreleasedSpy
+      local originalGamepadaxisSpy
 
       before_each(function()
         originalKeypressedSpy      = spy.new(function() end)
         originalKeyreleasedSpy     = spy.new(function() end)
-        originalGamepadpressedSpy  = spy.new(function() end)
-        originalGamepadreleasedSpy = spy.new(function() end)
         originalMousepressedSpy    = spy.new(function() end)
         originalMousereleasedSpy   = spy.new(function() end)
+        originalWheelmovedSpy      = spy.new(function() end)
+        originalGamepadpressedSpy  = spy.new(function() end)
+        originalGamepadreleasedSpy = spy.new(function() end)
+        originalGamepadaxisSpy     = spy.new(function() end)
         _G.love = {
           keypressed      = originalKeypressedSpy,
           keyreleased     = originalKeyreleasedSpy,
-          gamepadpressed  = originalGamepadpressedSpy,
-          gamepadreleased = originalGamepadreleasedSpy,
           mousepressed    = originalMousepressedSpy,
           mousereleased   = originalMousereleasedSpy,
+          wheelmoved      = originalWheelmovedSpy,
+          gamepadpressed  = originalGamepadpressedSpy,
+          gamepadreleased = originalGamepadreleasedSpy,
+          gamepadaxis     = originalGamepadaxisSpy,
         }
         Otokonokontroller:registerCallbacks()
       end)
@@ -73,10 +83,12 @@ describe('Otokonokontroller:', function()
       it('Should replace and wrap all original functions', function()
         assert.not_same(originalKeypressedSpy, _G.love.keypressed)
         assert.not_same(originalKeyreleasedSpy, _G.love.keyreleased)
-        assert.not_same(originalGamepadpressedSpy, _G.love.gamepadpressed)
-        assert.not_same(originalGamepadreleasedSpy, _G.love.gamepadreleased)
         assert.not_same(originalMousepressedSpy, _G.love.mousepressed)
         assert.not_same(originalMousereleasedSpy, _G.love.mousereleased)
+        assert.not_same(originalWheelmovedSpy, _G.love.wheelmoved)
+        assert.not_same(originalGamepadpressedSpy, _G.love.gamepadpressed)
+        assert.not_same(originalGamepadreleasedSpy, _G.love.gamepadreleased)
+        assert.not_same(originalGamepadaxisSpy, _G.love.gamepadaxis)
       end)
 
       it('Should call original function when calling the wrapped version', function()
@@ -84,14 +96,18 @@ describe('Otokonokontroller:', function()
         assert.spy(originalKeypressedSpy).was_called_with('a')
         _G.love.keyreleased('b')
         assert.spy(originalKeyreleasedSpy).was_called_with('b')
-        _G.love.gamepadpressed(joystick, 'dpup')
-        assert.spy(originalGamepadpressedSpy).was_called_with(joystick, 'dpup')
-        _G.love.gamepadreleased(joystick, 'dpdown')
-        assert.spy(originalGamepadreleasedSpy).was_called_with(joystick, 'dpdown')
         _G.love.mousepressed(0, 0, 1, false)
         assert.spy(originalMousepressedSpy).was_called_with(0, 0, 1, false)
         _G.love.mousereleased(0, 0, 1, false)
         assert.spy(originalMousereleasedSpy).was_called_with(0, 0, 1, false)
+        _G.love.wheelmoved(1, 0)
+        assert.spy(originalWheelmovedSpy).was_called_with(1, 0)
+        _G.love.gamepadpressed(joystick, 'dpup')
+        assert.spy(originalGamepadpressedSpy).was_called_with(joystick, 'dpup')
+        _G.love.gamepadreleased(joystick, 'dpdown')
+        assert.spy(originalGamepadreleasedSpy).was_called_with(joystick, 'dpdown')
+        _G.love.gamepadaxis(joystick, 'leftx', 0.5)
+        assert.spy(originalGamepadaxisSpy).was_called_with(joystick, 'leftx', 0.5)
       end)
     end)
   end)

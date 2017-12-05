@@ -19,8 +19,8 @@ install:
   - luarocks install luacov
 
 script:
-  - luacheck --no-unused-args --no-max-line-length --std max+love   otokonokontroller.lua main.lua
-  - luacheck --no-unused-args --no-max-line-length --std max+busted spec.lua
+  - luacheck --no-unused-args --std max+love   otokonokontroller.lua main.lua
+  - luacheck --no-unused-args --std max+busted spec.lua
   - busted --verbose --coverage spec.lua
 
 after_success:
