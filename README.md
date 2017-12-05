@@ -63,9 +63,15 @@ function love.draw()
 end
 ```
 
+Tips and Idiosyncrasies
+-----------------------
+
+h4. Mouse Wheel
+
+The mouse wheel is unique in that it does not have any conception of being pressed or released, it only makes complete movements. For this reason, both the pressed and released callbacks will be triggered immediately whenever the mousewheel is moved. `Controller:get()` and `Controller:down()` have undefined behaviour when dealing with the mousewheel.
+
 Todo
 ----
 
-* mousewheel
 * Ignore joystick input if none has been set.
 * `setJoystick('all')`

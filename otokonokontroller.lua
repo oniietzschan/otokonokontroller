@@ -49,6 +49,20 @@ local loveCallbacksToWrap = {
   mousereleased = function(self, x, y, button, isTouch)
     Otokonokontroller.changed(self, 'mouse:' .. button, 0)
   end,
+  wheelmoved = function(self, x, y)
+    local input = 'mousewheel:'
+    if x == 1 then
+      input = input .. 'x+'
+    elseif x == -1 then
+      input = input .. 'x-'
+    elseif y == 1 then
+      input = input .. 'y+'
+    elseif y == -1 then
+      input = input .. 'y-'
+    end
+    Otokonokontroller.changed(self, input, 1)
+    Otokonokontroller.changed(self, input, 0)
+  end,
   gamepadpressed = function(self, joystick, button)
     Otokonokontroller.changed(self, 'pad:' .. button, 1, joystick)
   end,
