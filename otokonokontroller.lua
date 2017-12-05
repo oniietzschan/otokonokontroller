@@ -208,6 +208,7 @@ function Controller:handleChange(keycode, value, joystick)
         self._released[control] = true
         self._onReleasedFn(control)
       end
+      self._lastActiveJoystick = joystick
     until true end
   end
 end
@@ -234,6 +235,10 @@ end
 
 function Controller:_assertControlDefined(control)
   assert(self._controls[control], 'Undefined control: ' .. control)
+end
+
+function Controller:getActiveDevice()
+  return self._lastActiveJoystick or 'keyboard'
 end
 
 

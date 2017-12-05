@@ -16,7 +16,7 @@ local player
 function love.load()
   Otokonokontroller:registerCallbacks()
 
-  local globalInput = Otokonokontroller:newController({
+  local globalController = Otokonokontroller:newController({
     quit = {'key:escape'},
   })
     :setPressedCallback(function(control)
@@ -29,9 +29,10 @@ function love.load()
 
   player = {
     x = 400,
-    y = 550,
+    y = 300,
+    speed = 100,
   }
-  player.input = Otokonokontroller:newController({
+  player.controller = Otokonokontroller:newController({
     walkLeft  = {'key:a', 'key:left',  'pad:dpleft', 'axis:leftx-'},
     walkRight = {'key:d', 'key:right', 'pad:dpright', 'axis:leftx+'},
     climb     = {'key:w', 'key:up',    'pad:dpup'},
@@ -54,9 +55,9 @@ function love.load()
 end
 
 function love.update(dt)
-  local x = self.input:get('walkRight') - self.input:get('walkLeft')
-  player.x = player.x + (x * self.speed * dt)
-  player.input:endFrame()
+  local x = player.controller:get('walkRight') - player.controller:get('walkLeft')
+  player.x = player.x + (x * player.speed * dt)
+  player.controller:endFrame()
 end
 
 function love.draw()

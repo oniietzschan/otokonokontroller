@@ -13,7 +13,7 @@ function Player:initialize()
   self.y = 300
   self.speed = 200
 
-  self.input = Otokonokontroller:newController({
+  self.controller = Otokonokontroller:newController({
     walkLeft  = {'key:a', 'key:left',  'pad:dpleft', 'axis:leftx-'},
     walkRight = {'key:d', 'key:right', 'pad:dpright', 'axis:leftx+'},
     climb     = {'key:w', 'key:up',    'pad:dpup'},
@@ -38,13 +38,14 @@ function Player:initialize()
 end
 
 function Player:update(dt)
-  local x = self.input:get('walkRight') - self.input:get('walkLeft')
+  local x = self.controller:get('walkRight') - self.controller:get('walkLeft')
   self.x = self.x + (x * self.speed * dt)
-  self.input:endFrame()
+  self.controller:endFrame()
 end
 
 function Player:draw()
   love.graphics.rectangle('fill', self.x, self.y, 32, 32)
+  love.graphics.print('Active Device: ' .. tostring(self.controller:getActiveDevice()), 10, 10)
 end
 
 function love.load()
