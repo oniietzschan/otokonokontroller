@@ -121,8 +121,8 @@ function Controller:setDeadzone(deadzone)
 end
 
 function Controller:setJoystick(joystick)
-  local isJoystick = type(joystick.typeOf) == 'function' and joystick:typeOf('Joystick')
-  assert(isJoystick, 'Joystick must be a love2d Joystick, got object of type: ' .. type(joystick))
+  local isNilOrJoystick = joystick == nil or (type(joystick.typeOf) == 'function' and joystick:typeOf('Joystick'))
+  assert(isNilOrJoystick, 'Joystick must be nil or a love2d Joystick, got object of type: ' .. type(joystick))
   self._joystick = joystick
   return self
 end
@@ -164,14 +164,13 @@ function Controller:handleChange(keycode, value, joystick)
   end
   for control, binds in pairs(self._controls) do
     for _, bind in ipairs(binds) do repeat
-      -- Continue if keycode is not bound to this control
       if keycode ~= bind then
-        break
+        break -- Continue if keycode is not bound to this control
       end
       if value < self._deadzone then
-        -- Continue if value is under deadzone AND this input is from another binding besides the last active one.
-        -- This check exists to filter out noise from idle joysticks which are jittering with values near zero.
         if keycode ~= self._pressedBy[control] then
+          -- Continue if value is under deadzone AND this input is from another binding besides the last active one.
+          -- This check exists to filter out noise from idle joysticks which are jittering with values near zero.
           break
         end
         value = 0
