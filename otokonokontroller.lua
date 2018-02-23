@@ -42,16 +42,16 @@ end
 
 local loveCallbacksToWrap = {
   keypressed = function(self, key)
-    Otokonokontroller.changed(self, 'key:' .. key, 1)
+    Otokonokontroller._changed(self, 'key:' .. key, 1)
   end,
   keyreleased = function(self, key)
-    Otokonokontroller.changed(self, 'key:' .. key, 0)
+    Otokonokontroller._changed(self, 'key:' .. key, 0)
   end,
   mousepressed = function(self, x, y, button, isTouch)
-    Otokonokontroller.changed(self, 'mouse:' .. button, 1)
+    Otokonokontroller._changed(self, 'mouse:' .. button, 1)
   end,
   mousereleased = function(self, x, y, button, isTouch)
-    Otokonokontroller.changed(self, 'mouse:' .. button, 0)
+    Otokonokontroller._changed(self, 'mouse:' .. button, 0)
   end,
   wheelmoved = function(self, x, y)
     local input = 'mousewheel:'
@@ -64,22 +64,23 @@ local loveCallbacksToWrap = {
     elseif y == -1 then
       input = input .. 'y-'
     end
-    Otokonokontroller.changed(self, input, 1)
-    Otokonokontroller.changed(self, input, 0)
+    Otokonokontroller._changed(self, input, 1)
+    Otokonokontroller._changed(self, input, 0)
   end,
   gamepadpressed = function(self, joystick, button)
-    Otokonokontroller.changed(self, 'pad:' .. button, 1, joystick)
+    Otokonokontroller._changed(self, 'pad:' .. button, 1, joystick)
   end,
   gamepadreleased = function(self, joystick, button)
-    Otokonokontroller.changed(self, 'pad:' .. button, 0, joystick)
+    Otokonokontroller._changed(self, 'pad:' .. button, 0, joystick)
   end,
   gamepadaxis = function(self, joystick, axis, value)
     local positiveValue = math.max(0, value)
     local negativeValue = math.abs(math.min(0, value))
-    Otokonokontroller.changed(self, 'axis:' .. axis .. '+', positiveValue, joystick)
-    Otokonokontroller.changed(self, 'axis:' .. axis .. '-', negativeValue, joystick)
+    Otokonokontroller._changed(self, 'axis:' .. axis .. '+', positiveValue, joystick)
+    Otokonokontroller._changed(self, 'axis:' .. axis .. '-', negativeValue, joystick)
   end,
 }
+
 function Otokonokontroller:registerCallbacks()
   for callbackName, newFn in pairs(loveCallbacksToWrap) do
     local originalCallbackFn = love[callbackName] or function() end
@@ -90,7 +91,7 @@ function Otokonokontroller:registerCallbacks()
   end
 end
 
-function Otokonokontroller:changed(keycode, value, joystick)
+function Otokonokontroller:_changed(keycode, value, joystick)
   for _, controller in ipairs(self._controllers) do
     controller:handleChange(keycode, value, joystick)
   end
@@ -137,6 +138,7 @@ function Controller:setControls(controls)
   self._released = {}
   self:_resetPressedAndReleased()
   self._values = {}
+  self._valuesRaw = {}
   for control, _ in pairs(self._controls) do
     self._values[control] = 0
   end
@@ -195,6 +197,9 @@ function Controller:handleChange(keycode, value, joystick)
       if keycode ~= bind then
         break -- Continue if keycode is not bound to this control
       end
+      if keycode == self._pressedBy[control] then
+        self._valuesRaw[control] = value
+      end
       if value < self._deadzone then
         if keycode ~= self._pressedBy[control] then
           -- Continue if value is under deadzone AND this input is from another binding besides the last active one.
@@ -204,6 +209,7 @@ function Controller:handleChange(keycode, value, joystick)
         value = 0
       else
         self._pressedBy[control] = keycode
+        self._lastActiveJoystick = joystick
       end
       local event
       if     value >= self._deadzone and self._values[control] < self._deadzone then
@@ -219,7 +225,6 @@ function Controller:handleChange(keycode, value, joystick)
         self._released[control] = true
         self._onReleasedFn(control)
       end
-      self._lastActiveJoystick = joystick
     until true end
   end
 end
@@ -227,6 +232,11 @@ end
 function Controller:get(control)
   self:_assertControlDefined(control)
   return self._values[control]
+end
+
+function Controller:getRaw(control)
+  self:_assertControlDefined(control)
+  return self._valuesRaw[control] or 0
 end
 
 function Controller:pressed(control)
