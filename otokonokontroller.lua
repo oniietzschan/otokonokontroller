@@ -40,55 +40,82 @@ function Otokonokontroller:initialize()
   return self
 end
 
-local loveCallbacksToWrap = {
-  keypressed = function(self, key)
-    Otokonokontroller._changed(self, 'key:' .. key, 1)
-  end,
-  keyreleased = function(self, key)
-    Otokonokontroller._changed(self, 'key:' .. key, 0)
-  end,
-  mousepressed = function(self, x, y, button, isTouch)
-    Otokonokontroller._changed(self, 'mouse:' .. button, 1)
-  end,
-  mousereleased = function(self, x, y, button, isTouch)
-    Otokonokontroller._changed(self, 'mouse:' .. button, 0)
-  end,
-  wheelmoved = function(self, x, y)
-    local input = 'mousewheel:'
-    if x == 1 then
-      input = input .. 'x+'
-    elseif x == -1 then
-      input = input .. 'x-'
-    elseif y == 1 then
-      input = input .. 'y+'
-    elseif y == -1 then
-      input = input .. 'y-'
-    end
-    Otokonokontroller._changed(self, input, 1)
-    Otokonokontroller._changed(self, input, 0)
-  end,
-  gamepadpressed = function(self, joystick, button)
-    Otokonokontroller._changed(self, 'pad:' .. button, 1, joystick)
-  end,
-  gamepadreleased = function(self, joystick, button)
-    Otokonokontroller._changed(self, 'pad:' .. button, 0, joystick)
-  end,
-  gamepadaxis = function(self, joystick, axis, value)
-    local positiveValue = math.max(0, value)
-    local negativeValue = math.abs(math.min(0, value))
-    Otokonokontroller._changed(self, 'axis:' .. axis .. '+', positiveValue, joystick)
-    Otokonokontroller._changed(self, 'axis:' .. axis .. '-', negativeValue, joystick)
-  end,
+local callbacksToWrap = {
+  'gamepadaxis',
+  'gamepadpressed',
+  'gamepadreleased',
+  'keypressed',
+  'keyreleased',
+  'mousepressed',
+  'mousereleased',
+  'wheelmoved',
 }
 
-function Otokonokontroller:registerCallbacks()
-  for callbackName, newFn in pairs(loveCallbacksToWrap) do
-    local originalCallbackFn = love[callbackName] or function() end
-    love[callbackName] = function(...)
-      newFn(self, ...)
-      originalCallbackFn(...)
+function Otokonokontroller:registerCallbacks(namespace)
+  namespace = namespace or love
+  assert(type(namespace) == 'table')
+  for _, callbackName in pairs(callbacksToWrap) do
+    local ourFn = Otokonokontroller[callbackName]
+    local originalFn = namespace[callbackName]
+    local wrappedFn
+    if originalFn then
+      wrappedFn = function(...)
+        ourFn(self, ...)
+        originalFn(...)
+      end
+    else
+      wrappedFn = function(...)
+        ourFn(self, ...)
+      end
     end
+    namespace[callbackName] = wrappedFn
   end
+end
+
+function Otokonokontroller:gamepadaxis(joystick, axis, value)
+  local positiveValue = math.max(0, value)
+  local negativeValue = math.abs(math.min(0, value))
+  self:_changed('axis:' .. axis .. '+', positiveValue, joystick)
+  self:_changed('axis:' .. axis .. '-', negativeValue, joystick)
+end
+
+function Otokonokontroller:gamepadpressed(joystick, button)
+  self:_changed('pad:' .. button, 1, joystick)
+end
+
+function Otokonokontroller:gamepadreleased(joystick, button)
+  self:_changed('pad:' .. button, 0, joystick)
+end
+
+function Otokonokontroller:keypressed(key)
+  self:_changed('key:' .. key, 1)
+end
+
+function Otokonokontroller:keyreleased(key)
+  self:_changed('key:' .. key, 0)
+end
+
+function Otokonokontroller:mousepressed(x, y, button, isTouch)
+  self:_changed('mouse:' .. button, 1)
+end
+
+function Otokonokontroller:mousereleased(x, y, button, isTouch)
+  self:_changed('mouse:' .. button, 0)
+end
+
+function Otokonokontroller:wheelmoved(x, y)
+  local input = 'mousewheel:'
+  if x == 1 then
+    input = input .. 'x+'
+  elseif x == -1 then
+    input = input .. 'x-'
+  elseif y == 1 then
+    input = input .. 'y+'
+  elseif y == -1 then
+    input = input .. 'y-'
+  end
+  self:_changed(input, 1)
+  self:_changed(input, 0)
 end
 
 function Otokonokontroller:_changed(keycode, value, joystick)
