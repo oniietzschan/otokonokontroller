@@ -57,6 +57,7 @@ end
 function love.update(dt)
   local x = player.controller:get('walkRight') - player.controller:get('walkLeft')
   player.x = player.x + (x * player.speed * dt)
+  -- IMPORTANT: Controller:pressed() and Controller:released() will not work correctly unless you call endFrame().
   player.controller:endFrame()
 end
 
