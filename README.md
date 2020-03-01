@@ -5,7 +5,7 @@ otokonokontroller
 [![Codecov](https://codecov.io/gh/oniietzschan/otokonokontroller/branch/master/graph/badge.svg)](https://codecov.io/gh/oniietzschan/otokonokontroller)
 ![Love Versions](https://img.shields.io/badge/Love2d-11%2C%200.10-blue.svg)
 
-Otokonokontroller is an input library for Love2d. It aims to support multiple paradigms, allowing one to use both input event callbacks and realtime checks like `pressed()`, `released()`, and `down()`.
+Otokonokontroller is an input library for Love2d. It aims to support multiple paradigms, allowing one to use both input event callbacks and inline checks like `pressed()`, `released()`, and `down()`.
 
 Example
 -------
